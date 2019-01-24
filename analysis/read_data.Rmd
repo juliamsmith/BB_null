@@ -1,0 +1,198 @@
+first, we list the directories in `to_store`
+
+```{r}
+library(tidyverse)
+conditions <- list.files("../to_store/")
+lookup_table <- data.frame()
+for (my_condition in conditions){
+  # split the string
+  my_split <- strsplit(my_condition, "_|\\=")[[1]]
+  # extract parameters
+  strategy <- as.numeric(my_split[3])
+  prob_maraud <- as.numeric(my_split[5])
+  dimension <- as.numeric(my_split[7])
+  repair <- as.numeric(my_split[9])
+  lookup_table <- rbind(lookup_table, data.frame(directory = my_condition, 
+                                                 strategy = strategy,
+                                                 prob_maraud = prob_maraud,
+                                                 dimension = dimension,
+                                                 repair = repair))
+}
+```
+
+
+
+```{r}
+#I've generated it once and it takes forever -- now instead I'm saving it as a dataframe
+saveRDS(all_results, file="all_results_varying_pmar_dim=2250_rep=4.Rda")
+#to get read in: whatever_name <- readRDS(file="all_results_varying_pmar_dim=2250_rep=4.Rda")
+
+# all_results <- tibble()
+# for (my_condition in conditions){
+#    # read and load each result
+#  my_dir_results <- paste0("../to_store/", my_condition, "/results/")
+#  my_results <- list.files(my_dir_results)
+#  if (length(my_results) > 0){
+#    # process a single file
+#    for (my_file in my_results) {
+#      # extract the random seed
+#      my_rnd_seed <- strsplit(substr(my_file, 5, 1000), "D")[[1]][1]
+#      my_rnd_seed <- as.numeric(my_rnd_seed)
+#      tmp <- read_csv(paste0(my_dir_results, my_file)) %>% add_column(rnd_seed = my_rnd_seed, directory = my_condition)
+#      tmp <- tmp %>% select(probability_maraud, successful_mating,
+#                            foraging_hrs, staying_hrs, repairing_hrs, marauding_events, marauding_hrs, marauding_events, traveling_hrs, rnd_seed, directory)
+#      all_results <- rbind(all_results, tmp)
+#    }
+#  }
+# }
+# 
+# all_results <- all_results %>% inner_join(lookup_table)
+
+
+```
+
+
+
+```{r}
+
+#saves a csv for each condition (for example, with 100 male and 1,000 simulations, this results in 100,000 rows)
+for (my_condition in conditions){
+  name<-paste0("results", my_condition) 
+  assign(name,filter(all_results, directory == my_condition))
+  write_csv(filter(all_results, directory == my_condition), path = paste0("results",my_condition,'.csv'))
+}
+
+```
+
+
+```{r}
+# for (my_condition in conditions){
+#   #name<-paste0("results", my_condition) 
+#   #assign(name,filter(all_results, directory == my_condition))
+#   
+#   marauders<-filter(filter(all_results, directory == my_condition), probability_maraud == 0.15)
+#   print(mean(marauders$successful_mating))
+#   print(sd(marauders$successful_mating))
+#   
+#   guarders<-filter(filter(all_results, directory == my_condition), probability_maraud == 0.0)
+#   print(mean(guarders$successful_mating))
+#   print(sd(guarders$successful_mating))
+# }
+
+
+```
+
+
+
+```{r}
+hist(all_results$successful_mating,  main="Bowerbird Mating Distribution", 
+     xlab="Sucessful Matings",  
+     col="light blue")
+
+```
+
+```{r}
+# for (my_condition in conditions){
+#   name<-paste0("mean_", my_condition)
+#   assign(name, mean(filter(filter(all_results, directory == my_condition), probability_maraud==0.15)$successful_mating))
+#   name<-paste0("sd_", my_condition)
+#   assign(name, sd(filter(filter(all_results, directory == my_condition), probability_maraud==0.15)$successful_mating))
+# }
+
+
+for (pmar in c(.004, .009, .018, .037, .057)) {
+  one_set<-filter(all_results, probability_maraud==pmar)
+  m=vector()
+  s=vector()
+  se=seq(.05, .95, .1)
+  for (prop in se) {
+    m=c(m, mean(filter(one_set, prob_maraud <(prop+.001) & prob_maraud > (prop - .001))$successful_mating)) 
+    s=c(s, sd(filter(one_set, prob_maraud <(prop+.001) & prob_maraud > (prop - .001))$successful_mating))
+  }
+  assign(paste0("means_", pmar), m)
+  assign(paste0("sds_", pmar), s)
+}
+
+plot(se, means_0.004, t='l', col="blue4",ylim=c(8.9, 9.2), 
+     main="Marauder mating success by propensity (dim=2250m, rep=4hrs)", 
+     xlab = "Proportion of males who are marauders",
+     ylab="Mean number of matings")
+lines(se, means_0.009, col="cornflowerblue")
+lines(se, means_0.018, col="blueviolet")
+lines(se, means_0.037, col="red1")
+lines(se, means_0.057, col="darkred")
+curve(0*x+9, lty=3, add=TRUE)
+legend(.7, 9.2, legend=c("All males (G & M)", "M: 0.004 (0.25/day)", "M: 0.009 (0.5/day)", "M: 0.018 (1/day)", "M: 0.037 (2/day)", "M: 0.057 (3/day)"),
+       col=c("black", "blue4", "cornflowerblue", "blueviolet", "red1", "darkred"), lty=c(3,1,1,1,1,1), cex=0.8)
+
+
+
+
+# for (my_condition in conditions){
+#   #name<-paste0("results", my_condition)
+#   #assign(name,filter(all_results, directory == my_condition))
+# 
+#   marauders<-filter(filter(all_results, directory == my_condition), probability_maraud == 0.15)
+#   print(mean(marauders$successful_mating))
+#   print(sd(marauders$successful_mating))
+# 
+#   guarders<-filter(filter(all_results, directory == my_condition), probability_maraud == 0.0)
+#   print(mean(guarders$successful_mating))
+#   print(sd(guarders$successful_mating))
+# }
+```
+
+```{r}
+#HAVEN'T RUN ANY OF THIS (or below) -- IT'S JUST LEFT FROM BEFORE
+
+marauders<-filter(all_results, probability_maraud == 0.15)
+guarders<-filter(all_results, probability_maraud == 0.0)
+
+m_repair<-mean(marauders$repairing_hrs)
+print(m_repair)
+g_repair<-mean(guarders$repairing_hrs)
+print(g_repair)
+
+m_stay<-mean(marauders$staying_hrs)
+print(m_stay)
+g_stay<-mean(guarders$staying_hrs)
+print(g_stay)
+
+
+m_forage<-mean(marauders$foraging_hrs)
+print(m_forage)
+g_forage<-mean(guarders$foraging_hrs)
+print(g_forage)
+
+m_maraud<-mean(marauders$marauding_hrs+marauders$traveling_hrs)
+print(m_maraud)
+g_maraud<-mean(guarders$marauding_hrs+guarders$traveling_hrs)
+print(g_maraud)
+
+dat <- read.table(text = "Marauders Guarders 
+1 91.0 52.2
+2 191.5 237.2
+3 70.88 70.7
+4 6.70 0", header = TRUE)
+
+par(mar=c(5,5,5,12), xpd=TRUE)
+barplot(as.matrix(dat), col=c("salmon","lightsteelblue1","lightgreen","gold"))
+legend("topright", inset=c(-0.4,0),             
+fill=c("salmon","lightsteelblue1","lightgreen","gold"),
+legend=c("repair bower", "stay at bower", "forage","maraud"))
+```
+
+```{r}
+
+par(mfrow=c(4,5))
+for (prop in seq(.05,.95,.1)) {
+   for (rep in c(4,6)) {
+    boxplot(successful_mating~probability_maraud,data=filter(all_results, prob_maraud<(prop+.001) & prob_maraud>(prop-.001) & dimension==900 & repair == rep), main=paste("rep time =", rep, "prop M =", prop), 
+     xlab="Strategy (G=0, M=0.15)", ylab="MS") 
+  } 
+}
+
+
+```
+
+

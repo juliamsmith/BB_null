@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import truncnorm
 import os
 
-def in_write(dim_val, m_prop_val, RB_time_val, num_sims, max_m_val):
+def in_write(male_dist, m_prop_val, RB_time_val, num_sims, max_m_val):
     #timeline = SortedDict()
     t_max = 12 * 30 # time when simulation ends
 
@@ -25,13 +25,15 @@ def in_write(dim_val, m_prop_val, RB_time_val, num_sims, max_m_val):
     female_visit_param = [FV_std, FV_mean, FV_norm_range[0], FV_norm_range[1]]  
 
     # POSITIONS AND TRAVEL TIME
-    x_dim, y_dim = dim_val, dim_val # dimensions of environment
+    #note male_dist=male_dist
     bird_speed = 12 * 3600 # m/hr (12 m/s)
+    
+    #Previously had preferance, but now only two birds, so not necessary
     # now choose lambda_dist, controlling the probability of traveling to a neighbor
     # the probability of choosing a neighbor at distance x is proportional to exp(-\lambda x)
     # choose lambda such that 99% of the mass is before 800 meters
-    improb_dist = 800
-    improb_sds = 2
+    #improb_dist = 800
+    #improb_sds = 2
     #if using exp decay
     #lambda_dist = - math.log(1.0 - improb) / improb_distance
 
@@ -68,11 +70,8 @@ def in_write(dim_val, m_prop_val, RB_time_val, num_sims, max_m_val):
               'F_per_M', 
               'females', 
               'female_visit_param',
-              'x_dim', 
-              'y_dim', 
+              'male_dist', 
               'bird_speed', 
-              'improb_dist',
-              'improb_sds', 
               'FG_tau_mean', 
               'FG_tau_std',
               'FG_tau_range', 
@@ -90,12 +89,9 @@ def in_write(dim_val, m_prop_val, RB_time_val, num_sims, max_m_val):
               males, 
               F_per_M, 
               females, 
-              female_visit_param,
-              x_dim, 
-              y_dim, 
+              female_visit_param, 
+              male_dist,
               bird_speed, 
-              improb_dist,
-              improb_sds,
               FG_tau_mean, 
               FG_tau_std,
               FG_tau_range, 
@@ -111,7 +107,7 @@ def in_write(dim_val, m_prop_val, RB_time_val, num_sims, max_m_val):
              ]
     in_titles=[]
     out_titles=[]
-    conditions_name='{}_strat={}_pmar={}_dim={}_repair_{}'.format(C_or_D,max_maraud,prop_maraud,x_dim,damage_to_bower)
+    conditions_name='{}_strat={}_pmar={}_dim={}_repair_{}'.format(C_or_D,max_maraud,prop_maraud,male_dist,damage_to_bower)
     os.makedirs("../to_store/{}".format(conditions_name))
     os.makedirs("../to_store/{}/parameters".format(conditions_name))
     os.makedirs("../to_store/{}/results".format(conditions_name))
@@ -122,8 +118,7 @@ def in_write(dim_val, m_prop_val, RB_time_val, num_sims, max_m_val):
         out_title='res_{}{}'.format(correcter,j) + conditions_name + '.csv'
         out_titles.append(out_title)
         my_string=('random_seed = ' + str(j) + '\n'+
-                   'out_title = ' +  "'" + out_title + "'" + '\n' + 
-                   'strategies_string =' + "'" + strategies_string + "'" + '\n')
+                   'out_title = ' +  "'" + out_title + "'" + '\n')
         for i in range(len(name_vec)):
             tack_on= str(name_vec[i]) + ' = ' + str(value_vec[i]) + '\n'
             my_string+=tack_on

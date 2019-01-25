@@ -24,7 +24,7 @@ def writebatchscript(num_sims, in_titles, out_titles, conditions_name):
 
 def vary_params(dim_vec, m_prop_vec, RB_time_vec, num_sims, max_m_vec):
     for i in range(len(dim_vec)):
-        dim_val = dim_vec[i]
+        male_dist = dist_vec[i]
         for k in range(len(RB_time_vec)):
             RB_time_val = RB_time_vec[k]
             for l in range(len(max_m_vec)):

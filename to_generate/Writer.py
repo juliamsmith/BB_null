@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 from scipy.stats import truncnorm
 import os
 
-def in_write(male_dist, m_prop_val, RB_time_val, num_sims, max_m_val):
+def in_write(male_dist, RB_time_val, num_sims, max_m_val):
     #timeline = SortedDict()
     t_max = 12 * 30 # time when simulation ends
 
     # MALES
-    males = 100 # number of male birds
+    males = 2 # number of male birds
 
     # FEMALES
     F_per_M = 9 #The number of sexualy mature females per sexually mature male
@@ -60,8 +60,8 @@ def in_write(male_dist, m_prop_val, RB_time_val, num_sims, max_m_val):
     C_or_D='D'
 
     max_maraud=max_m_val
-    prop_maraud=round(m_prop_val,3) #only useful in discrete case #using round as a precaution because we got weird things last time
-    strategies_string = 'numpy.random.choice(2, {}, p=[1-{}, {}])*{}'.format(males, prop_maraud, prop_maraud, max_maraud) #DISCRETE: 0, max_maraud
+    
+    #DISCRETE: 0, max_maraud
     #'numpy.random.random(males)*{}'.format(max_maraud) #UNIFORM DISTRIBUTION of strategies capped at max_maraud
 
 
@@ -83,7 +83,8 @@ def in_write(male_dist, m_prop_val, RB_time_val, num_sims, max_m_val):
               'RBSB_tau_std', 
               'RBSB_tau_norm_range',
               'damage_to_bower',
-              'time_spent_marauding'
+              'time_spent_marauding',
+              'max_maraud'
              ]
     value_vec=[t_max, 
               males, 
@@ -103,11 +104,12 @@ def in_write(male_dist, m_prop_val, RB_time_val, num_sims, max_m_val):
               RBSB_tau_std, 
               RBSB_tau_norm_range,
               damage_to_bower,
-              time_spent_marauding
+              time_spent_marauding,
+              max_maraud
              ]
     in_titles=[]
     out_titles=[]
-    conditions_name='{}_strat={}_pmar={}_dim={}_repair_{}'.format(C_or_D,max_maraud,prop_maraud,male_dist,damage_to_bower)
+    conditions_name='{}_pmar={}_dim={}_repair_{}'.format(C_or_D,max_maraud,round(male_dist,3),damage_to_bower)
     os.makedirs("../to_store/{}".format(conditions_name))
     os.makedirs("../to_store/{}/parameters".format(conditions_name))
     os.makedirs("../to_store/{}/results".format(conditions_name))

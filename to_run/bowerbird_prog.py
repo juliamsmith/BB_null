@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import math
 from sortedcontainers import SortedDict
 import random
@@ -39,7 +39,7 @@ def action_forage(bird_id, current_time):
     global birds
     my_bird=birds[bird_id]
     # generate the time it takes to forage
-    time_spent_foraging = numpy.random.gamma(FG_k, FG_theta)/FG_divisor
+    time_spent_foraging = np.random.gamma(FG_k, FG_theta)/FG_divisor
     time_action_ends = current_time + time_spent_foraging
     # generate the ticket
     generate_ticket(start_time = current_time,
@@ -52,7 +52,7 @@ def action_forage(bird_id, current_time):
     my_bird["current_state"] = "foraging"
     my_bird["action_starts"] = current_time
     my_bird["action_ends"] = time_action_ends
-    my_bird["foraging_time_data"] += numpy.array([1, time_spent_foraging, time_spent_foraging * time_spent_foraging])
+    my_bird["foraging_time_data"] += np.array([1, time_spent_foraging, time_spent_foraging * time_spent_foraging])
     # update the time to next foraging: start counting when foraging ended
     birds[bird_id]["next_foraging_time"] = draw_foraging_time(time_action_ends)
 
@@ -73,13 +73,13 @@ def action_stay_at_bower(bird_id, current_time):
     my_bird["current_state"] = "staying at bower"
     my_bird["action_starts"] = current_time
     my_bird["action_ends"] = time_action_ends
-    my_bird["staying_time_data"] += numpy.array([1, time_spent_at_bower, time_spent_at_bower * time_spent_at_bower])
+    my_bird["staying_time_data"] += np.array([1, time_spent_at_bower, time_spent_at_bower * time_spent_at_bower])
 
 def action_travel_to_maraud(bird_id, current_time, travel_times):
     global birds
     my_bird=birds[bird_id]
     # choose who to maraud
-    tmp = numpy.random.rand()
+    tmp = np.random.rand()
     target = not bird_id #visit other bird
     time_to_travel = travel_times
     time_action_ends = current_time + time_to_travel
@@ -94,7 +94,7 @@ def action_travel_to_maraud(bird_id, current_time, travel_times):
     my_bird["current_state"] = "travel to maraud"
     my_bird["action_starts"] = current_time
     my_bird["action_ends"] = time_action_ends
-    my_bird["traveling_time_data"] += numpy.array([1, time_to_travel * 2, time_to_travel * time_to_travel * 4])
+    my_bird["traveling_time_data"] += np.array([1, time_to_travel * 2, time_to_travel * time_to_travel * 4])
     #NOTE: use * 2 to account for return time, as well
     
 def action_repair_bower(bird_id, current_time):
@@ -114,7 +114,7 @@ def action_repair_bower(bird_id, current_time):
     my_bird["current_state"] = "repairing bower"
     my_bird["action_starts"] = current_time
     my_bird["action_ends"] = time_action_ends
-    my_bird["repairing_time_data"] += numpy.array([1, time_spent_repairing_bower, time_spent_repairing_bower * time_spent_repairing_bower])
+    my_bird["repairing_time_data"] += np.array([1, time_spent_repairing_bower, time_spent_repairing_bower * time_spent_repairing_bower])
     # note: already accounts for the improvements
     my_bird["bower_state"] = birds[bird_id]["bower_state"] + time_spent_repairing_bower
     # cannot make it better than 0
@@ -138,7 +138,7 @@ def action_maraud(marauder_id, marauder_target, current_time):
     my_bird["current_state"] = "marauding"
     my_bird["action_starts"] = current_time
     my_bird["action_ends"] = time_action_ends
-    my_bird["marauding_time_data"] += numpy.array([1, time_spent_marauding, time_spent_marauding * time_spent_marauding]) # add one more travel event
+    my_bird["marauding_time_data"] += np.array([1, time_spent_marauding, time_spent_marauding * time_spent_marauding]) # add one more travel event
     # update target
     birds[marauder_target]["bower_state"] = birds[marauder_target]["bower_state"] - damage_to_bower
     
@@ -198,7 +198,7 @@ def choose_action(bird, current_time, travel_times):
             # go repair
             action_repair_bower(bird["id"], current_time)
         # check if it wants to maraud
-        elif numpy.random.rand() < bird["probability_maraud"]:
+        elif np.random.rand() < bird["probability_maraud"]:
             # go maraud
             action_travel_to_maraud(bird["id"], current_time, travel_times)
         else:
@@ -215,18 +215,18 @@ def initialize_male(bird_id, bird_strategy, travel_times):
             "bower_state": 0.0,
             "successful_mating": 0,
             "next_foraging_time": draw_foraging_time(0.0),
-            "foraging_time_data": numpy.array([0.0, 0.0, 0.0]), #number of events, cumulative time spent, sum(duration^2)
-            "staying_time_data": numpy.array([0.0, 0.0, 0.0]),
-            "repairing_time_data": numpy.array([0.0, 0.0, 0.0]),
-            "marauding_time_data": numpy.array([0.0, 0.0, 0.0]),
-            "traveling_time_data": numpy.array([0.0, 0.0, 0.0])
+            "foraging_time_data": np.array([0.0, 0.0, 0.0]), #number of events, cumulative time spent, sum(duration^2)
+            "staying_time_data": np.array([0.0, 0.0, 0.0]),
+            "repairing_time_data": np.array([0.0, 0.0, 0.0]),
+            "marauding_time_data": np.array([0.0, 0.0, 0.0]),
+            "traveling_time_data": np.array([0.0, 0.0, 0.0])
             }
     return(bird)
 
 def initialize_female(female_id, males):
     #initialize dictionary
     female_bird = {"id": female_id,
-             "already_visited": [numpy.random.randint(males)], # choose a random male to be the "last visited"
+             "already_visited": [np.random.randint(males)], # choose a random male to be the "last visited"
              "max_per_day": min(males - 1, 6), #will never be used bc 
              "wait_period": 12, #will never actually be used bc marauder's bower is always intact
             #HARD CODED PARAMS
@@ -264,7 +264,7 @@ def read_ticket(tic, travel_times):
     else:
         1 / 0 # something went horribly wrong
     
-def runsimulation(t_max, males, F_per_M, females,female_visit_param, male_dist, bird_speed, FG_tau_mean, FG_tau_std,FG_tau_range, FG_tau_norm_range,FG_k, FG_theta, FG_divisor,RBSB_tau_mean, RBSB_tau_std, RBSB_tau_norm_range, damage_to_bower, max_maraud):
+def runsimulation(t_max, males, F_per_M, females,female_visit_param, male_dist, bird_speed, FG_tau_mean, FG_tau_std,FG_tau_range, FG_tau_norm_range,FG_k, FG_theta, FG_divisor,RBSB_tau_mean, RBSB_tau_std, RBSB_tau_norm_range, damage_to_bower, max_maraud, n_mar, mar_ids):
     global birds
     global timeline
     global female_birds
@@ -272,13 +272,15 @@ def runsimulation(t_max, males, F_per_M, females,female_visit_param, male_dist, 
     # BIRDS
     birds = []
     female_birds=[]
-
+    mars = eval(mar_ids)
+    strategies = np.zeros(males)
+    strategies[mars] = max_maraud
 
     # initialize positions, travel times and preferences
     travel_times = compute_distances_travel_times(male_dist, bird_speed)
     for i in range(males):
         birds.append(initialize_male(i, 
-                                     i*max_maraud, #strategy for bird 0 is 0 (guarder) and 1 is max_maraud (marauder)
+                                     strategies[i], #strategy for bird 0 is 0 (guarder) and 1 is max_maraud (marauder)
                                      travel_times))
         # choose its first action
         choose_action(birds[-1], 0.0, travel_times)
@@ -323,6 +325,8 @@ if __name__ == "__main__": # special line: code to execute when you call this  p
     global damage_to_bower
     global out_title
     global max_maraud
+    global n_mar
+    global mar_ids 
 
     # import the parameter file
     myin = imp.load_source(name = "myin", pathname = sys.argv[1]) 
@@ -345,6 +349,10 @@ if __name__ == "__main__": # special line: code to execute when you call this  p
     RBSB_tau_norm_range = myin.RBSB_tau_norm_range
     damage_to_bower= myin.damage_to_bower
     max_maraud= myin.max_maraud
+    n_mar = myin.n_mar
+    mar_ids= myin.mar_ids
+    print(mar_ids)
+    print(eval(mar_ids))
     
 
     def clean_bird_for_output(bi):
@@ -370,7 +378,7 @@ if __name__ == "__main__": # special line: code to execute when you call this  p
                                       FG_tau_std,FG_tau_range, 
                                       FG_tau_norm_range, FG_k, FG_theta, 
                                       FG_divisor,RBSB_tau_mean, 
-                                      RBSB_tau_std, RBSB_tau_norm_range, damage_to_bower, max_maraud)
+                                      RBSB_tau_std, RBSB_tau_norm_range, damage_to_bower, max_maraud, n_mar, mar_ids)
     
     f = open(myin.out_title, "w+")
     dw = csv.DictWriter(f, clean_bird_for_output(simulation_output[0]).keys())

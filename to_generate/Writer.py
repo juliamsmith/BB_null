@@ -1,18 +1,14 @@
-import numpy
+import numpy as np
 import math
 from sortedcontainers import SortedDict
 import random
-import numpy 
 import matplotlib.pyplot as plt
 from scipy.stats import truncnorm
 import os
 
-def in_write(male_dist, RB_time_val, num_sims, max_m_val):
+def in_write(male_dist, RB_time_val, num_sims, max_m_val, males, n_mar):
     #timeline = SortedDict()
     t_max = 12 * 30 # time when simulation ends
-
-    # MALES
-    males = 2 # number of male birds
 
     # FEMALES
     F_per_M = 9 #The number of sexualy mature females per sexually mature male
@@ -56,13 +52,16 @@ def in_write(male_dist, RB_time_val, num_sims, max_m_val):
 
     damage_to_bower = RB_time_val
 
-    #Male strategies
+    #Male discrete or continuous 
     C_or_D='D'
+    
+    #mar IDs
+    mar_ids = 'np.random.permutation(males)[0:n_mar]'
 
     max_maraud=max_m_val
     
     #DISCRETE: 0, max_maraud
-    #'numpy.random.random(males)*{}'.format(max_maraud) #UNIFORM DISTRIBUTION of strategies capped at max_maraud
+    #'np.random.random(males)*{}'.format(max_maraud) #UNIFORM DISTRIBUTION of strategies capped at max_maraud
 
 
     name_vec=['t_max', 
@@ -84,7 +83,8 @@ def in_write(male_dist, RB_time_val, num_sims, max_m_val):
               'RBSB_tau_norm_range',
               'damage_to_bower',
               'time_spent_marauding',
-              'max_maraud'
+              'max_maraud',
+              'n_mar'
              ]
     value_vec=[t_max, 
               males, 
@@ -105,11 +105,12 @@ def in_write(male_dist, RB_time_val, num_sims, max_m_val):
               RBSB_tau_norm_range,
               damage_to_bower,
               time_spent_marauding,
-              max_maraud
+              max_maraud,
+              n_mar
              ]
     in_titles=[]
     out_titles=[]
-    conditions_name='{}_pmar={}_dim={}_repair_{}'.format(C_or_D,max_maraud,round(male_dist,3),damage_to_bower)
+    conditions_name='{}_pmar={}_dim={}_repair_{}_males={}_nmar={}'.format(C_or_D,max_maraud,round(male_dist,3),damage_to_bower,males,n_mar)
     os.makedirs("../to_store/{}".format(conditions_name))
     os.makedirs("../to_store/{}/parameters".format(conditions_name))
     os.makedirs("../to_store/{}/results".format(conditions_name))
@@ -120,7 +121,8 @@ def in_write(male_dist, RB_time_val, num_sims, max_m_val):
         out_title='res_{}{}'.format(correcter,j) + conditions_name + '.csv'
         out_titles.append(out_title)
         my_string=('random_seed = ' + str(j) + '\n'+
-                   'out_title = ' +  "'" + out_title + "'" + '\n')
+                   'out_title = ' +  "'" + out_title + "'" + '\n'+
+                   'mar_ids =' + "'" + mar_ids + "'" + '\n')
         for i in range(len(name_vec)):
             tack_on= str(name_vec[i]) + ' = ' + str(value_vec[i]) + '\n'
             my_string+=tack_on

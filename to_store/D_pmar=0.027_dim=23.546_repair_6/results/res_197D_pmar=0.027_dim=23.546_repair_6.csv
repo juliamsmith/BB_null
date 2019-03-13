@@ -1,3 +1,0 @@
-id,probability_maraud,successful_mating,next_foraging_time,foraging_events,foraging_hrs,foraging_sqhrs,staying_events,staying_hrs,staying_sqhrs,repairing_events,repairing_hrs,repairing_sqhrs,marauding_events,marauding_hrs,marauding_sqhrs,traveling_events,traveling_hrs,traveling_sqhrs
-0,0.0,12,360.0829495840834,569.0,70.8048274133195,14.510583746696799,1487.0,246.78058459470589,52.63090604552282,246.0,42.446288890565555,9.404071885091327,0.0,0.0,0.0,0.0,0.0,0.0
-1,0.027,6,360.1200867909257,562.0,69.6306800578503,14.166277265288157,1673.0,289.70942044964215,62.15502068325351,0.0,0.0,0.0,7.0,0.7,0.07,52.0,0.056685883872222266,6.179402750721269e-05

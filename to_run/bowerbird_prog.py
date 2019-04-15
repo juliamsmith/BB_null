@@ -77,10 +77,11 @@ def action_stay_at_bower(bird_id, current_time):
 
 def action_travel_to_maraud(bird_id, current_time, travel_times):
     global birds
+    global males
     my_bird=birds[bird_id]
-    # choose who to maraud
-    tmp = np.random.rand()
-    target = not bird_id #visit other bird
+    all_males=np.arange(males)
+    targ_ops=np.append(all_males[0:int(bird_id)], all_males[int(bird_id+1):males])
+    target = np.random.choice(targ_ops) #visit other bird
     time_to_travel = travel_times
     time_action_ends = current_time + time_to_travel
     # generate the ticket
@@ -165,6 +166,7 @@ def action_travel_from_maraud(marauder_id, marauder_target, current_time, travel
 def action_mating_attempt(female_id, current_time, travel_times):
     global birds
     global female_birds
+    global males
     female_index = int(female_id[1:]) #convert from ID to index; i.e. "F0" -> 0
     female = female_birds[female_index] # extract female
     last_location = female["already_visited"][-1] #index of most recently visited male
@@ -172,7 +174,9 @@ def action_mating_attempt(female_id, current_time, travel_times):
     if len(female["already_visited"]) == female["max_per_day"]:
         female["already_visited"] = []
         extra_wait = female["wait_period"]  #HARD CODE
-    target = not last_location
+    all_males=np.arange(males)
+    targ_ops=np.append(all_males[0:int(last_location)], all_males[int(last_location+1):males])
+    target = np.random.choice(targ_ops) #visit other bird
     time_to_travel = travel_times
     time_action_ends = current_time + time_to_travel
     generate_ticket(start_time = time_action_ends + extra_wait, 
@@ -233,7 +237,7 @@ def initialize_female(female_id, males):
             }
     return(female_bird)
 
-# this is the most important function!
+# this is the most important function
 def read_ticket(tic, travel_times):
     global birds
     global t_max

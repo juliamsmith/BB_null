@@ -223,7 +223,9 @@ def initialize_male(bird_id, bird_strategy, travel_times):
             "staying_time_data": np.array([0.0, 0.0, 0.0]),
             "repairing_time_data": np.array([0.0, 0.0, 0.0]),
             "marauding_time_data": np.array([0.0, 0.0, 0.0]),
-            "traveling_time_data": np.array([0.0, 0.0, 0.0])
+            "traveling_time_data": np.array([0.0, 0.0, 0.0]),
+            "mar_attempts": np.empty((0,3)),
+            "mate_attempts": np.empty((0,3))
             }
     return(bird)
 
@@ -236,8 +238,7 @@ def initialize_female(female_id, males):
             #HARD CODED PARAMS
             }
     return(female_bird)
-
-# this is the most important function
+        
 def read_ticket(tic, travel_times):
     global birds
     global t_max
@@ -247,24 +248,38 @@ def read_ticket(tic, travel_times):
     elif tic["action"] == "travel to maraud":
         # check whether the target is at home
         go_maraud = True
+        state_str = ""
         if birds[tic["target"]]["current_state"] in ("staying at bower", "repairing bower"):
             go_maraud = False
+            state_str = "present"
         if birds[tic["target"]]["bower_state"] < 0.0:
             go_maraud = False
+            state_str = state_str + "destroyed"
         if go_maraud: # maraud
             action_maraud(tic["owner"], tic["target"], tic["end_time"])
+            state_str="marauded"
         else: # go back
             action_travel_from_maraud(tic["owner"], tic["target"], tic["end_time"], travel_times)
+        data_pt = np.array([[tic["owner"], tic["end_time"], state_str]])
+        birds[tic["target"]]["mar_attempts"] = np.concatenate((birds[tic["target"]]["mar_attempts"], data_pt))
     elif tic["action"] == "marauding":
         # travel back
         action_travel_from_maraud(tic["owner"], tic["target"], tic["end_time"], travel_times)
     elif tic["action"] == "mating attempt":
+        state_str = ""
         if birds[tic["target"]]["current_state"] == "staying at bower": #if male is at bower and it is intact
             birds[tic["target"]]["successful_mating"] += 1 #successfully mate and stop generating tickets
+            state_str = "mated"
         else:  
-            female_birds[int(tic["owner"][1:])]["already_visited"].append(tic["target"]) #update the female's already_visited list
+            if birds[tic["target"]]["current_state"] not in ("staying at bower", "repairing bower"):
+                state_str = "absent"
+            if birds[tic["target"]]["bower_state"] < 0.0:
+                state_str = state_str + "destroyed"
+            female_birds[int(tic["owner"][1:])]["already_visited"].append(tic["target"]) #update the female's already_visited list          
             if tic['end_time'] < t_max:
                 action_mating_attempt(tic["owner"], tic["end_time"], travel_times) #generate a new ticket
+        data_pt = np.array([[tic["owner"], tic["end_time"], state_str]])
+        birds[tic["target"]]["mate_attempts"] = np.concatenate((birds[tic["target"]]["mate_attempts"], data_pt))
     else:
         1 / 0 # something went horribly wrong
     
